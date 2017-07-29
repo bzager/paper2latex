@@ -9,7 +9,7 @@ import os
 
 import numpy as np
 import matplotlib.pyplot as plt
-from skimage import io,util,transform,filters,morphology,exposure,measure,segmentation
+from skimage import io,util,transform,filters,morphology,feature,measure,segmentation
 
 
 #########################################################
@@ -52,12 +52,6 @@ def limits(img):
 def rescale(img,scale):
 	scaled = transform.rescale(img,scale,mode='reflect',preserve_range=True)
 	return scaled
-
-# adjusts image intensities to enhance contrast
-def equalize(img):
-	#img = exposure.adjust_sigmoid(img,cutoff=0.5,gain=5,inv=False)
-	img = exposure.adjust_gamma(img,gamma=1.0,gain=1.0)
-	return img
 
 # Gaussian smoothing
 def smooth(img,sig=1):
@@ -115,6 +109,18 @@ def label(img):
 # 
 def properties(labels):
 	return measure.regionprops(labels)
+
+#########################################################
+################### Feature Extraction ##################
+#########################################################
+
+# histogram of oriented gradients 
+def hog(img,orientations=0,cell=(5,5)):
+	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=(1,1),visualise=True)
+
+# local binary pattern
+def lbp(img,P=8,R=1,method="default"):
+	return feature.local_binary_pattern(img,P=P,R=R,method=method)
 
 
 #########################################################

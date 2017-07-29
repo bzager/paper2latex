@@ -11,7 +11,7 @@
 
 import tools
 
-def preprocess(img,sig=1):
+def preprocess(img,sig=2.0):
 	img = tools.smooth(img,sig=sig)
 	return img
 

@@ -5,7 +5,7 @@
 import sys
 sys.dont_write_bytecode = True
 
-from tools import loadScaled,displayAll
+from tools import loadScaled,displayAll,limits
 from segment import segmentation,binarize
 from symbol import Symbol
 
@@ -27,11 +27,16 @@ def main():
 	bimg,labels,props = segmentation(img,radius=radius,method=method,sig=sig)
 	
 	print("initializing symbols...")
-	symbols = [Symbol(region) for region in props[1:]]
+	symbols = [Symbol(region,img) for region in props[1:]]
 
 	print("displaying...")
-	displayAll([bimg,labels])
-	displayAll([sym.image for sym in symbols])
+	#displayAll([img,bimg])
+	#displayAll([sym.image for sym in symbols])
+	#displayAll([sym.original for sym in symbols])
+	displayAll([sym.hogImg for sym in symbols])
+	displayAll([sym.lbp for sym in symbols])
+
+
 
 # 
 def getInput():
