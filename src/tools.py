@@ -1,14 +1,15 @@
 # tools.py
 # Ben Zager
 # Image processing functions for paper2latex
-# used by: binzarize.py, segment.py
+# used by: segment.py, main.py
+# 
 
 import sys
 import os
 
 import numpy as np
 import matplotlib.pyplot as plt
-from skimage import io,transform,filters,morphology,exposure,measure
+from skimage import io,util,transform,filters,morphology,exposure,measure,segmentation
 
 
 #########################################################
@@ -40,6 +41,9 @@ def loadAll(directory="",maxsize=1000000):
 	
 	return imgs
 
+def limits(img):
+	return util.dtype_limits(img)
+
 #########################################################
 ##################### Preprocessing #####################
 #########################################################
@@ -53,8 +57,14 @@ def rescale(img,scale):
 def equalize(img):
 	#img = exposure.adjust_sigmoid(img,cutoff=0.5,gain=5,inv=False)
 	img = exposure.adjust_gamma(img,gamma=1.0,gain=1.0)
-	
 	return img
+
+# Gaussian smoothing
+def smooth(img,sig=1):
+	if sig == None:
+		return img
+	return filters.gaussian(img,sigma=sig)
+
 
 #########################################################
 ###################### Thresholding #####################
@@ -68,26 +78,41 @@ def sauvola(img,size=25,k=0.2):
 ##################### Morphology ####################
 #########################################################
 
+# 
 def getSelem(radius):
 	return morphology.disk(radius)
 
+# 
 def opening(img,radius):
 	return morphology.binary_opening(img,selem=getSelem(radius))
 
+# 
 def erode(img,radius):
 	return morphology.binary_erosion(img,selem=getSelem(radius))
 
+# 
 def removeHoles(img,size=32):
 	return morphology.remove_small_holes(img,min_size=size)
-
 
 #########################################################
 ###################### Segmentation #####################
 #########################################################
 
+"""
+# Felzenszwalb's efficient graph based image segmentation (EGBIS)
+def felz(img,scale=1,sig=0.8,min_size=20):
+	return segmentation.felzenszwalb(img,scale=scale,sigma=sig,min_size=min_size)
+"""
+
+# 
+def clearBorder(labels,buff=1):
+	return segmentation.clear_border(labels,buffer_size=buff)
+
+# 
 def label(img):
 	return measure.label(img,connectivity=2,background=1)
 
+# 
 def properties(labels):
 	return measure.regionprops(labels)
 
@@ -112,15 +137,15 @@ def display(img1,img2,titles=[]):
 		fig.colorbar(im2,ax=ax[1],fraction=0.046,pad=0.04)
 
 # display a list of images
-def displayAll(imgs,title=""):
+def displayAll(imgs,title="",cmap="gray"):
 	cols = int(np.ceil(np.sqrt(len(imgs))))
-	rows = int(np.ceil(len(imgs) / cols))
+	rows = int(np.ceil(len(imgs) / float(cols)))
 
 	fig,axes = plt.subplots(nrows=rows,ncols=cols,figsize=(12,6))
 	plt.figtext(0.5,0.9,title)
 
 	for im,ax in zip(imgs,axes.flatten()):
-		ax.imshow(im)
+		ax.imshow(im,cmap=cmap)
 		ax.set_xticks([]); ax.set_yticks([])
 
 #
@@ -153,6 +178,7 @@ def plotImgHist(img,hist,center,width,text=" "):
 	
 	ax[1].set_title(text)
 
+# 
 def fullImgHist(img,data,text=""):
 	h,cen,wid = hist(data)
 	plotImgHist(img,h,cen,wid,text=text)

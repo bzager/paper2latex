@@ -11,6 +11,10 @@
 
 import tools
 
+def preprocess(img,sig=1):
+	img = tools.smooth(img,sig=sig)
+	return img
+
 # convert grayscale to binary using sauvola threshold
 def threshold(img,size=25,k=0.2):
 	thresh = tools.sauvola(img,size=size,k=k)
@@ -23,15 +27,29 @@ def clean(img,radius=1,method=""):
 	elif method == "open":
 		img = tools.opening(img,radius=radius)
 
-	return tools.removeHoles(img)
+	img = tools.removeHoles(img)
 
-# run each step
-def binarize(img,radius,method):
-	img = threshold(img)
-	img = clean(img,radius,method)
 	return img
 
-#
-def segmentProperties(img):
+# 
+def binarize(img,radius,method,sig):
+	img = preprocess(img,sig=sig)
+	img = threshold(img)
+	img = clean(img,radius=radius,method=method)
+	return img
+
+
+# label each region and caluculate properties
+def segmentProperties(img,buff=1):
 	labels = tools.label(img)
-	return tools.properties(labels),labels
+	labels = tools.clearBorder(labels,buff=buff)
+	return labels,tools.properties(labels)
+
+# run each step
+def segmentation(img,radius=3,method="open",sig=1.0,buff=1):
+	img = binarize(img,radius,method,sig)
+	labels,props = segmentProperties(img,buff=buff)
+
+	return img,labels,props
+
+

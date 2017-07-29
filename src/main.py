@@ -6,13 +6,12 @@ import sys
 sys.dont_write_bytecode = True
 
 from tools import loadScaled,displayAll
-from segment import binarize,segmentProperties
+from segment import segmentation,binarize
 from symbol import Symbol
 
 import numpy as np
-
 import matplotlib.pyplot as plt
-plt.rcParams['image.cmap'] = 'gray'
+plt.rcParams['image.cmap'] = 'gray' # good colormaps: prism,flag
 
 # 
 def main():
@@ -22,19 +21,17 @@ def main():
 
 	radius = 4
 	method = "open"
-	#method "erode"
+	sig = 2.0
 
-	print("binarizing image...")
-	bimg = binarize(img,radius,method)
-
-	print("calculating properties...")
-	props,labels = segmentProperties(bimg)
-	symbols = [Symbol(region) for region in props[1:]]
+	print("segmenting image...")
+	bimg,labels,props = segmentation(img,radius=radius,method=method,sig=sig)
 	
+	print("initializing symbols...")
+	symbols = [Symbol(region) for region in props[1:]]
+
 	print("displaying...")
 	displayAll([bimg,labels])
 	displayAll([sym.image for sym in symbols])
-
 
 # 
 def getInput():
@@ -43,11 +40,12 @@ def getInput():
 	if len(sys.argv) == 3: 
 		maxsize = sys.argv[2]
 	else: 
-		maxsize = 1000000
+		maxsize = 400000
 	return fname,maxsize
 
 
 if __name__=="__main__":
 	main()
+	plt.tight_layout(pad=0.1,h_pad=None,w_pad=None)
 	plt.show()
 
