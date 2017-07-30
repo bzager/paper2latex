@@ -3,20 +3,12 @@
 # Symbol class for paper2latex
 
 import numpy as np
-from tools import hog,lbp
-
-def getOriginal(full,coords,box):
-	minr,minc,maxr,maxc = box
-	img = np.ones([maxr-minr,maxc-minc])
-	r = coords[:,0]; c = coords[:,1]
-	img[r-minr,c-minc] = full[r,c]
-
-	return img
+from tools import hog,lbp,resizeImg
 
 
 class Symbol:
 
-	def __init__(self,props,img):
+	def __init__(self,props,img,size=60,extra=4):
 
 		self.props = props
 		self.label = props.label
@@ -27,26 +19,44 @@ class Symbol:
 		self.height = props.bbox[2] - props.bbox[0]
 		self.width = props.bbox[3] - props.bbox[1]
 
-		self.original = getOriginal(img,props.coords,props.bbox)
+		self.original = None
+		self.square = None
+
+		self.setOriginal(img)
+		self.setSquare(size=size,extra=extra)
 
 		# features
 		self.centroid = props.centroid
 		self.area = props.area
 
-		#self.hog,self.hogImg = hog(self.original)
-		#self.lbp = lbp(self.original,P=8,R=1)
-		self.hog,self.hogImg = hog(self.image)
-		self.lbp = lbp(self.image,P=8,R=1)
-
+		#self.hog,self.hogImg = hog(self.resized)
+		#self.lbp = lbp(self.resized,P=8,R=1)
+	
 		self.parent = None
 		self.children = []
 
+	# finds segemented region of original image
+	def setOriginal(self,img):
+		minr,minc,maxr,maxc = self.box
+		self.original = np.ones([maxr-minr,maxc-minc])
+		r = self.coords[:,0]
+		c = self.coords[:,1]
+		self.original[r-minr,c-minc] = img[r,c]
 
+	# pads and resizes image to square of given size
+	def setSquare(self,size=60,extra=4):
+		self.square = resizeImg(self.image,size=size,extra=extra)
+
+
+	# returns title for plotting
 	def getTitle(self):
-		label = "Label: "+str(self.label)
-		centroid = " ("+str(self.centroid[0])+","+str(self.centroid[1])+") "
+		label = "Label: "+str(self.label)+" "
+		centroid = " ("+str(np.around(self.centroid[0],2))+","+str(np.around(self.centroid[1],2))+") "
+		area = "A: "+str(self.area)+" "
+		height = "H: "+str(self.height)+" "
+		width = "W: "+str(self.width)+" "
 
-		return label+centroid
+		return label+area+height+width+centroid
 
 """
 ***Possibly useful attributes***

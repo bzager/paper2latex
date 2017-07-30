@@ -23,6 +23,9 @@ def load(name,directory=""):
 # loads image, scaling it to below max number of pixels
 def loadScaled(name,directory="",maxsize=1000000):
 	img = load(name,directory)
+
+	if maxsize == None:
+		return img
 		
 	if img.size > maxsize:
 		scale = np.sqrt(maxsize/float(img.size))
@@ -31,7 +34,7 @@ def loadScaled(name,directory="",maxsize=1000000):
 	return img
 
 # loads all images from a directory
-def loadAll(directory="",maxsize=1000000):
+def loadAll(directory="",maxsize=400000):
 	imgs = []
 	
 	for fname in os.listdir("../images/"):
@@ -41,6 +44,7 @@ def loadAll(directory="",maxsize=1000000):
 	
 	return imgs
 
+#
 def limits(img):
 	return util.dtype_limits(img)
 
@@ -50,8 +54,33 @@ def limits(img):
 
 # rescales image by a given size
 def rescale(img,scale):
-	scaled = transform.rescale(img,scale,mode='reflect',preserve_range=True)
-	return scaled
+	return transform.rescale(img,scale,mode='reflect',preserve_range=True)
+
+# 
+def pad(img,width=((0,0),(0,0))):
+	return util.pad(img,width,mode="constant",constant_values=0)
+
+# padds an image along smaller axis to make square
+def squareImg(img):
+	diff = np.amax(img.shape)-np.amin(img.shape)
+	padding = (int(diff/2),int(diff/2))
+
+	if img.shape[0] > img.shape[1]:
+		return pad(img,((0,0),padding))
+	elif img.shape[1] > img.shape[0]:
+		return pad(img,(padding,(0,0))) 
+	else:
+		return img
+
+
+# resizes and pads image to given size
+def resizeImg(img,size=46,extra=4):
+	square = squareImg(img)
+	scale = size / np.sqrt(square.size)
+	rescaled = rescale(square,scale) # size x size
+	ex = int(extra / 2)
+	return pad(rescaled,width=((ex,ex),(ex,ex))) # (size+extra) x (size+extra)
+
 
 # Gaussian smoothing
 def smooth(img,sig=1):
@@ -104,7 +133,7 @@ def clearBorder(labels,buff=1):
 
 # 
 def label(img):
-	return measure.label(img,connectivity=2,background=1)
+	return measure.label(img,connectivity=1,background=1)
 
 # 
 def properties(labels):
@@ -115,10 +144,11 @@ def properties(labels):
 #########################################################
 
 # histogram of oriented gradients 
-def hog(img,orientations=0,cell=(5,5)):
+def hog(img,orientations=8,cell=(5,5)):
 	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=(1,1),visualise=True)
 
 # local binary pattern
+# methods: default, ror, uniform, nri_uniform, var
 def lbp(img,P=8,R=1,method="default"):
 	return feature.local_binary_pattern(img,P=P,R=R,method=method)
 
