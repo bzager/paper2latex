@@ -10,32 +10,33 @@ class Symbol:
 
 	def __init__(self,props,img,size=60,extra=4):
 
-		self.props = props
-		self.label = props.label
+		self.props = props # 
+		self.label = props.label # 
 
 		self.image = props.image # binary image
 		self.box = props.bbox  # (min_row,min_col,max_row,max_col)
-		self.coords = props.coords
-		self.height = props.bbox[2] - props.bbox[0]
-		self.width = props.bbox[3] - props.bbox[1]
+		self.coords = props.coords # 
+		self.height = props.bbox[2] - props.bbox[0] # 
+		self.width = props.bbox[3] - props.bbox[1] # 
 
-		self.original = None
-		self.square = None
+		self.original = None # 
+		self.square = None # 
 
-		self.setOriginal(img)
-		self.setSquare(size=size,extra=extra)
+		self.setOriginal(img) # 
+		self.setSquare(size=size,extra=extra) # 
 
 		# features
-		self.centroid = props.centroid
-		self.area = props.area
+		self.centroid = props.centroid # 
+		self.area = props.area # 
 
-		#self.hog,self.hogImg = hog(self.resized)
-		#self.lbp = lbp(self.resized,P=8,R=1)
+		self.hog,self.hogImg = None # 
+		self.lbp = None # 
 	
-		self.parent = None
-		self.children = []
+		self.parent = None # 
+		self.children = [] # 
 
-	# finds segemented region of original image
+
+	# Finds segemented region of original grayscale image
 	def setOriginal(self,img):
 		minr,minc,maxr,maxc = self.box
 		self.original = np.ones([maxr-minr,maxc-minc])
@@ -43,12 +44,20 @@ class Symbol:
 		c = self.coords[:,1]
 		self.original[r-minr,c-minc] = img[r,c]
 
-	# pads and resizes image to square of given size
+	# Pads and resizes image to square of given size
 	def setSquare(self,size=60,extra=4):
 		self.square = resizeImg(self.image,size=size,extra=extra)
 
+	# histogram of oriented gradients
+	def hog(self,orientations=8,cell=(5,5)):
+		self.hog,self.hogImg = hog(self.square,orientations=orientations,cell=cell)
 
-	# returns title for plotting
+	# local binary pattern
+	def lbp(self,P=8,R=1,method="uniform"):
+		self.lbp = lbp(self.square,P=P,R=R,method=method)
+
+
+	# Returns title for plotting
 	def getTitle(self):
 		label = "Label: "+str(self.label)+" "
 		centroid = " ("+str(np.around(self.centroid[0],2))+","+str(np.around(self.centroid[1],2))+") "
@@ -57,6 +66,7 @@ class Symbol:
 		width = "W: "+str(self.width)+" "
 
 		return label+area+height+width+centroid
+
 
 """
 ***Possibly useful attributes***

@@ -44,7 +44,8 @@ def loadAll(directory="",maxsize=400000):
 	
 	return imgs
 
-#
+# intensity limits for img, 
+# should be (0,1) or (0,255)
 def limits(img):
 	return util.dtype_limits(img)
 
@@ -52,15 +53,16 @@ def limits(img):
 ##################### Preprocessing #####################
 #########################################################
 
-# rescales image by a given size
+# rescales image by a given factor
 def rescale(img,scale):
 	return transform.rescale(img,scale,mode='reflect',preserve_range=True)
 
-# 
+# pads img with zeros
+# width ->  ((before axis 0,after axis 0),(before axis 1, after axis 1)), 
 def pad(img,width=((0,0),(0,0))):
 	return util.pad(img,width,mode="constant",constant_values=0)
 
-# padds an image along smaller axis to make square
+# pads an image along smaller axis to make square
 def squareImg(img):
 	diff = np.amax(img.shape)-np.amin(img.shape)
 	padding = (int(diff/2),int(diff/2))
@@ -93,7 +95,7 @@ def smooth(img,sig=1):
 ###################### Thresholding #####################
 #########################################################
 
-# 
+# sauvola thresholding
 def sauvola(img,size=25,k=0.2):
 	return filters.threshold_sauvola(img,window_size=size,k=k)
 
@@ -101,19 +103,20 @@ def sauvola(img,size=25,k=0.2):
 ##################### Morphology ####################
 #########################################################
 
-# 
+# structuring element
+# disk of given radius
 def getSelem(radius):
 	return morphology.disk(radius)
 
-# 
+# morphological opening for binary image
 def opening(img,radius):
 	return morphology.binary_opening(img,selem=getSelem(radius))
 
-# 
+# morphological erosion for binary image
 def erode(img,radius):
 	return morphology.binary_erosion(img,selem=getSelem(radius))
 
-# 
+# remove small holes smaller than [size] pixels
 def removeHoles(img,size=32):
 	return morphology.remove_small_holes(img,min_size=size)
 
@@ -127,15 +130,15 @@ def felz(img,scale=1,sig=0.8,min_size=20):
 	return segmentation.felzenszwalb(img,scale=scale,sigma=sig,min_size=min_size)
 """
 
-# 
+# removes regions with [buff] pixels of border
 def clearBorder(labels,buff=1):
 	return segmentation.clear_border(labels,buffer_size=buff)
 
-# 
+# labels each isolated region with an integer
 def label(img):
 	return measure.label(img,connectivity=1,background=1)
 
-# 
+# calculate properties of each labeled region
 def properties(labels):
 	return measure.regionprops(labels)
 
@@ -143,13 +146,15 @@ def properties(labels):
 ################### Feature Extraction ##################
 #########################################################
 
-# histogram of oriented gradients 
+# histogram of oriented gradients
+# returns tuple (feature vector, visualization w/ same size as input)
 def hog(img,orientations=8,cell=(5,5)):
 	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=(1,1),visualise=True)
 
 # local binary pattern
+# R = radius of neighbor pixels, P = number of pixels at that radius
 # methods: default, ror, uniform, nri_uniform, var
-def lbp(img,P=8,R=1,method="default"):
+def lbp(img,P=8,R=1,method="uniform"):
 	return feature.local_binary_pattern(img,P=P,R=R,method=method)
 
 
@@ -172,6 +177,7 @@ def display(img1,img2,titles=[]):
 	if len(img2.shape) == 2:
 		fig.colorbar(im2,ax=ax[1],fraction=0.046,pad=0.04)
 
+
 # display a list of images
 def displayAll(imgs,title="",cmap="gray"):
 	cols = int(np.ceil(np.sqrt(len(imgs))))
@@ -184,19 +190,19 @@ def displayAll(imgs,title="",cmap="gray"):
 		ax.imshow(im,cmap=cmap)
 		ax.set_xticks([]); ax.set_yticks([])
 
-#
+# gets histogram shape from [bins]
 def getShape(bins):
 	center = (bins[:-1] + bins[1:]) / 2
 	width = 1.0*(bins[1] - bins[0])
 	return center,width
 
-#
+# calculates histogram
 def hist(data,nbins=256,range=None):
 	his,bins = np.histogram(data,bins=nbins,density=True)
 	center,width = getShape(bins)
 	return his,center,width
 
-#
+# plots a given histogram
 def histPlot(hist,center,width,title=""):
 	fig,ax = plt.subplots(nrows=1,ncols=1,figsize=(8,2))
 	ax.bar(center,hist,width=width)
@@ -211,15 +217,14 @@ def plotImgHist(img,hist,center,width,text=" "):
 	ax[1].bar(center,hist,width=width)
 	#ax[1].set_xlim([-1,1])
 	#ax[1].set_ylim([0,0.1])
-	
 	ax[1].set_title(text)
 
-# 
+# calculates histogram of data and displays next to an image
 def fullImgHist(img,data,text=""):
 	h,cen,wid = hist(data)
 	plotImgHist(img,h,cen,wid,text=text)
 
-#
+# calculates and plots histogram of [data]
 def fullHist(data,title="",nbins=256,range=None):
 	h,cen,wid = hist(data,nbins=nbins,range=range)
 	histPlot(h,cen,wid,title=title)

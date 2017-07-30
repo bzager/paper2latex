@@ -34,14 +34,14 @@ def main():
 	displayAll([sym.hogImg for sym in symbols])
 	displayAll([sym.lbp for sym in symbols])
 
-# 
+# get image name and maximum size
 def getInput():
 	fname = sys.argv[1]
 
 	if len(sys.argv) == 3: 
 		maxsize = sys.argv[2]
 	else: 
-		maxsize = 400000
+		maxsize = None
 	return fname,maxsize
 
 
