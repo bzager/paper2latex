@@ -63,14 +63,21 @@ def pad(img,width=((0,0),(0,0))):
 	return util.pad(img,width,mode="constant",constant_values=0)
 
 # pads an image along smaller axis to make square
+# if both axes are even or odd, pad (0,0) to larger
+# if one axis is even and other is odd, pad (1,0) to 
 def squareImg(img):
 	diff = np.amax(img.shape)-np.amin(img.shape)
-	padding = (int(diff/2),int(diff/2))
+	padMain = (int(np.ceil(diff/2)),int(np.ceil(diff/2)))
+	
+	if img.shape[0] % 2 != img.shape[1] % 2: 
+		padFix = (0,1)
+	else: 
+		padFix = (0,0)
 
 	if img.shape[0] > img.shape[1]:
-		return pad(img,((0,0),padding))
+		return pad(img,((padFix,padMain)))
 	elif img.shape[1] > img.shape[0]:
-		return pad(img,(padding,(0,0))) 
+		return pad(img,(padMain,padFix))
 	else:
 		return img
 
@@ -112,9 +119,17 @@ def getSelem(radius):
 def opening(img,radius):
 	return morphology.binary_opening(img,selem=getSelem(radius))
 
+# 
+def closing(img,radius):
+	return morphology.binary_closing(img,selem=getSelem(radius))
+
 # morphological erosion for binary image
 def erode(img,radius):
 	return morphology.binary_erosion(img,selem=getSelem(radius))
+
+# morphological dilation for binary image
+def dilate(img,radius):
+	return morphology.binary_dilation(img,selem=getSelem(radius))
 
 # remove small holes smaller than [size] pixels
 def removeHoles(img,size=32):
@@ -148,8 +163,8 @@ def properties(labels):
 
 # histogram of oriented gradients
 # returns tuple (feature vector, visualization w/ same size as input)
-def hog(img,orientations=8,cell=(5,5)):
-	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=(1,1),visualise=True)
+def hog(img,orientations=8,cell=(5,5),block=(1,1),vector=True):
+	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=block,block_norm="L2-Hys",visualise=True,feature_vector=vector)
 
 # local binary pattern
 # R = radius of neighbor pixels, P = number of pixels at that radius
@@ -183,12 +198,18 @@ def displayAll(imgs,title="",cmap="gray"):
 	cols = int(np.ceil(np.sqrt(len(imgs))))
 	rows = int(np.ceil(len(imgs) / float(cols)))
 
-	fig,axes = plt.subplots(nrows=rows,ncols=cols,figsize=(12,6))
+	fig,axes = plt.subplots(nrows=rows,ncols=cols,figsize=(20,12))
 	plt.figtext(0.5,0.9,title)
+
+	while len(imgs) < len(axes.flatten()):
+		imgs.append(np.ones([10,10]))
 
 	for im,ax in zip(imgs,axes.flatten()):
 		ax.imshow(im,cmap=cmap)
 		ax.set_xticks([]); ax.set_yticks([])
+	#for ax in axes.flatten():
+		#ax.set_xticks([]); ax.set_yticks([])
+
 
 # gets histogram shape from [bins]
 def getShape(bins):

@@ -29,7 +29,8 @@ class Symbol:
 		self.centroid = props.centroid # 
 		self.area = props.area # 
 
-		self.hog,self.hogImg = None # 
+		self.hog = None # 
+		self.hogImg = None # 
 		self.lbp = None # 
 	
 		self.parent = None # 
@@ -45,17 +46,18 @@ class Symbol:
 		self.original[r-minr,c-minc] = img[r,c]
 
 	# Pads and resizes image to square of given size
-	def setSquare(self,size=60,extra=4):
+	def setSquare(self,size=56,extra=4):
 		self.square = resizeImg(self.image,size=size,extra=extra)
 
 	# histogram of oriented gradients
-	def hog(self,orientations=8,cell=(5,5)):
-		self.hog,self.hogImg = hog(self.square,orientations=orientations,cell=cell)
+	def calcHOG(self,orientations=8,cell=(5,5),block=(1,1),vector=False):
+		self.hog,self.hogImg = hog(self.square,orientations=orientations,cell=cell,block=block,vector=vector)
 
+	"""
 	# local binary pattern
-	def lbp(self,P=8,R=1,method="uniform"):
+	def calcLBP(self,P=8,R=1,method="uniform"):
 		self.lbp = lbp(self.square,P=P,R=R,method=method)
-
+	"""
 
 	# Returns title for plotting
 	def getTitle(self):

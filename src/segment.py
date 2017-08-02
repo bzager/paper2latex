@@ -26,15 +26,17 @@ def threshold(img,size=25,k=0.2):
 # Post process image for to clean up binarization
 # Apply erosion/opening with structuring element of size [radius]
 # Remove small holes with fewer than [size] pixels
-def clean(img,radius=1,method="",size=32):
+def clean(img,radius=3,method="",size=32):
 	if method == "erode":
-		img = tools.erode(img,radius=radius)
+		img = tools.erode(img,radius)
 	elif method == "open":
-		img = tools.opening(img,radius=radius)
+		img = tools.opening(img,radius)
+	elif method == "dilate":
+		img = tools.dilate(img,radius)
+	elif method == "close":
+		img = tools.closing(img,radius)
 
-	img = tools.removeHoles(img,size=size)
-
-	return img
+	return tools.removeHoles(img,size=size)
 
 # Convert grayscale [img] to binary image
 def binarize(img,radius,method,sig):
