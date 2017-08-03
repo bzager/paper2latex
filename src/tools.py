@@ -163,7 +163,7 @@ def properties(labels):
 
 # histogram of oriented gradients
 # returns tuple (feature vector, visualization w/ same size as input)
-def hog(img,orientations=8,cell=(5,5),block=(1,1),vector=True):
+def calcHOG(img,orientations=8,cell=(5,5),block=(1,1),vector=True):
 	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=block,block_norm="L2-Hys",visualise=True,feature_vector=vector)
 
 # local binary pattern
@@ -232,13 +232,18 @@ def histPlot(hist,center,width,title=""):
 	#ax.set_ylim([0,0.1])
 
 # plots an image and histogram
-def plotImgHist(img,hist,center,width,text=" "):
-	fig,ax = plt.subplots(nrows=1,ncols=2,figsize=(10,4))
-	ax[0].imshow(img); ax[0].set_xticks([]); ax[0].set_yticks([]);
-	ax[1].bar(center,hist,width=width)
-	#ax[1].set_xlim([-1,1])
-	#ax[1].set_ylim([0,0.1])
-	ax[1].set_title(text)
+def plotImgHist(imgs,hist,center,width,text=" "):
+	fig,axes = plt.subplots(nrows=1,ncols=len(imgs)+1,figsize=(16,8))
+	
+	for ax,im in zip(axes,imgs):
+		ax.imshow(im); ax.set_xticks([]); ax.set_yticks([]);
+	
+	axes[-1].bar(center,hist,width=width)
+	axes[-1].set_xlim([0,hist.size])
+	axes[-1].set_ylim([0,np.amax(hist)*1.05])
+	axes[-1].set_title(text)
+	axes[-1].set_aspect(axes[-1].get_xlim()[1]/axes[-1].get_ylim()[1])
+
 
 # calculates histogram of data and displays next to an image
 def fullImgHist(img,data,text=""):

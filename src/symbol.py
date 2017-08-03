@@ -3,7 +3,7 @@
 # Symbol class for paper2latex
 
 import numpy as np
-from tools import hog,lbp,resizeImg
+from tools import calcHOG,resizeImg,plotImgHist
 
 
 class Symbol:
@@ -29,9 +29,9 @@ class Symbol:
 		self.centroid = props.centroid # 
 		self.area = props.area # 
 
-		self.hog = None # 
-		self.hogImg = None # 
-		self.lbp = None # 
+		self.hog = {} # 
+		self.hogImg = {} # 
+		self.phog = None
 	
 		self.parent = None # 
 		self.children = [] # 
@@ -50,14 +50,32 @@ class Symbol:
 		self.square = resizeImg(self.image,size=size,extra=extra)
 
 	# histogram of oriented gradients
-	def calcHOG(self,orientations=8,cell=(5,5),block=(1,1),vector=False):
-		self.hog,self.hogImg = hog(self.square,orientations=orientations,cell=cell,block=block,vector=vector)
+	def calcHog(self,cell):
+		hog,hogImg = calcHOG(self.square,orientations=8,cell=(cell,cell),block=(1,1),vector=True)
+		self.hog[cell] = hog
+		self.hogImg[cell] = hogImg
+
+	# 
+	def calcPhog(self,cells=[5,10,20]):
+		self.hog = {}
+		self.hogImg = {}
+		for cell in cells:
+			self.calcHog(cell=cell)
+		self.phog = np.concatenate(list(self.hog.values()))
+		
 
 	"""
 	# local binary pattern
 	def calcLBP(self,P=8,R=1,method="uniform"):
 		self.lbp = lbp(self.square,P=P,R=R,method=method)
 	"""
+
+	#
+	def displayPhog(self):
+		wid = 1
+		cen = np.arange(0,self.phog.size) + 0.5*wid
+		plotImgHist(list(self.hogImg.values()),self.phog,cen,wid,text=str(int(np.sum(self.phog))))
+
 
 	# Returns title for plotting
 	def getTitle(self):
