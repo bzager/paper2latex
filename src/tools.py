@@ -18,7 +18,7 @@ from skimage import io,util,transform,filters,morphology,feature,measure,segment
 
 # loads grayscale image from given directory
 def load(name,directory=""):
-	return io.imread("../images/"+name,as_grey=True)
+	return io.imread("../"+directory+"/"+name,as_grey=True)
 
 # loads image, scaling it to below max number of pixels
 def loadScaled(name,directory="",maxsize=1000000):
@@ -34,10 +34,10 @@ def loadScaled(name,directory="",maxsize=1000000):
 	return img
 
 # loads all images from a directory
-def loadAll(directory="",maxsize=400000):
+def loadAll(directory="",maxsize=400000,count=20):
 	imgs = []
 	
-	for fname in os.listdir("../images/"):
+	for fname in os.listdir("../"+directory+"/")[:count]:
 		if fname==".DS_Store":
 			continue
 		imgs.append(loadScaled(fname,directory,maxsize=maxsize))
@@ -69,6 +69,9 @@ def squareImg(img):
 	diff = np.amax(img.shape)-np.amin(img.shape)
 	padMain = (int(np.ceil(diff/2)),int(np.ceil(diff/2)))
 	
+	if img.shape[0] == img.shape[1]:
+		return img
+
 	if img.shape[0] % 2 != img.shape[1] % 2: 
 		padFix = (0,1)
 	else: 
@@ -81,14 +84,17 @@ def squareImg(img):
 	else:
 		return img
 
+# 
+def padExtra(img,extra):
+	width = (int(np.ceil(extra/2)),int(np.floor(extra/2)))
+	return pad(img,width=(width,width))
 
 # resizes and pads image to given size
-def resizeImg(img,size=46,extra=4):
+def resizeImg(img,size=45,extra=5):
 	square = squareImg(img)
 	scale = size / np.sqrt(square.size)
 	rescaled = rescale(square,scale) # size x size
-	ex = int(extra / 2)
-	return pad(rescaled,width=((ex,ex),(ex,ex))) # (size+extra) x (size+extra)
+	return padExtra(rescaled,extra) # (size+extra) x (size+extra)
 
 
 # Gaussian smoothing
@@ -160,6 +166,7 @@ def properties(labels):
 #########################################################
 ################### Feature Extraction ##################
 #########################################################
+
 
 # histogram of oriented gradients
 # returns tuple (feature vector, visualization w/ same size as input)

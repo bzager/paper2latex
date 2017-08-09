@@ -8,9 +8,26 @@ from tools import calcHOG,resizeImg,plotImgHist
 
 class Symbol:
 
-	def __init__(self,props,img,size=60,extra=4):
+	def __init__(self,props,img=None,size=45,extra=5):
 
 		self.props = props # 
+
+		self.hog = {} # 
+		self.hogImg = {} # 
+		self.phog = None
+	
+		self.parent = None # 
+		self.children = [] #
+
+		if props != None:
+			 self.initProps(props,img=img,size=size,extra=extra)
+		else:
+			self.initTrain(img=img)
+
+		self.setSquare(size=size,extra=extra) # 
+
+	# 
+	def initProps(self,props,img,size,extra):
 		self.label = props.label # 
 
 		self.image = props.image # binary image
@@ -18,32 +35,34 @@ class Symbol:
 		self.coords = props.coords # 
 		self.height = props.bbox[2] - props.bbox[0] # 
 		self.width = props.bbox[3] - props.bbox[1] # 
-
-		self.original = None # 
-		self.square = None # 
-
-		self.setOriginal(img) # 
-		self.setSquare(size=size,extra=extra) # 
-
-		# features
 		self.centroid = props.centroid # 
-		self.area = props.area # 
+		self.area = props.area #
 
-		self.hog = {} # 
-		self.hogImg = {} # 
-		self.phog = None
-	
-		self.parent = None # 
-		self.children = [] # 
+		#self.original = None # 
+		#self.setOriginal(img) # 
+
+
+	# 
+	def initTrain(self,img):
+		self.label = None # 
+		self.image = img # binary image
+		self.box = None  # (min_row,min_col,max_row,max_col)
+		self.coords = None # 
+		self.height = None # 
+		self.width = None # 
+		self.centroid = None # 
+		self.area = None # 
 
 
 	# Finds segemented region of original grayscale image
-	def setOriginal(self,img):
-		minr,minc,maxr,maxc = self.box
-		self.original = np.ones([maxr-minr,maxc-minc])
-		r = self.coords[:,0]
-		c = self.coords[:,1]
-		self.original[r-minr,c-minc] = img[r,c]
+	"""def setOriginal(self,img):
+					if img == None:
+						return
+					minr,minc,maxr,maxc = self.box
+					self.original = np.ones([maxr-minr,maxc-minc])
+					r = self.coords[:,0]
+					c = self.coords[:,1]
+					self.original[r-minr,c-minc] = img[r,c]"""
 
 	# Pads and resizes image to square of given size
 	def setSquare(self,size=56,extra=4):
