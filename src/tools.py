@@ -2,7 +2,7 @@
 # Ben Zager
 # Image processing functions for paper2latex
 # used by: segment.py, main.py
-# 
+#
 
 import sys
 import os
@@ -26,25 +26,25 @@ def loadScaled(name,directory="",maxsize=1000000):
 
 	if maxsize == None:
 		return img
-		
+
 	if img.size > maxsize:
 		scale = np.sqrt(maxsize/float(img.size))
-		return rescale(img,scale) 
-	
+		return rescale(img,scale)
+
 	return img
 
 # loads all images from a directory
 def loadAll(directory="",maxsize=400000,count=20):
 	imgs = []
-	
+
 	for fname in os.listdir("../"+directory+"/")[:count]:
 		if fname==".DS_Store":
 			continue
 		imgs.append(loadScaled(fname,directory,maxsize=maxsize))
-	
+
 	return imgs
 
-# intensity limits for img, 
+# intensity limits for img,
 # should be (0,1) or (0,255)
 def limits(img):
 	return util.dtype_limits(img)
@@ -58,23 +58,23 @@ def rescale(img,scale):
 	return transform.rescale(img,scale,mode='reflect',preserve_range=True)
 
 # pads img with zeros
-# width ->  ((before axis 0,after axis 0),(before axis 1, after axis 1)), 
+# width ->  ((before axis 0,after axis 0),(before axis 1, after axis 1)),
 def pad(img,width=((0,0),(0,0))):
 	return util.pad(img,width,mode="constant",constant_values=0)
 
 # pads an image along smaller axis to make square
 # if both axes are even or odd, pad (0,0) to larger
-# if one axis is even and other is odd, pad (1,0) to 
+# if one axis is even and other is odd, pad (1,0) to
 def squareImg(img):
 	diff = np.amax(img.shape)-np.amin(img.shape)
 	padMain = (int(np.ceil(diff/2)),int(np.ceil(diff/2)))
-	
+
 	if img.shape[0] == img.shape[1]:
 		return img
 
-	if img.shape[0] % 2 != img.shape[1] % 2: 
+	if img.shape[0] % 2 != img.shape[1] % 2:
 		padFix = (0,1)
-	else: 
+	else:
 		padFix = (0,0)
 
 	if img.shape[0] > img.shape[1]:
@@ -84,7 +84,7 @@ def squareImg(img):
 	else:
 		return img
 
-# 
+#
 def padExtra(img,extra):
 	width = (int(np.ceil(extra/2)),int(np.floor(extra/2)))
 	return pad(img,width=(width,width))
@@ -125,7 +125,7 @@ def getSelem(radius):
 def opening(img,radius):
 	return morphology.binary_opening(img,selem=getSelem(radius))
 
-# 
+#
 def closing(img,radius):
 	return morphology.binary_closing(img,selem=getSelem(radius))
 
@@ -190,7 +190,7 @@ def display(img1,img2,titles=[]):
 	im1 = ax[0].imshow(img1)
 	im2 = ax[1].imshow(img2)
 	ax[0].set_xticks([]); ax[0].set_yticks([]); ax[1].set_xticks([]); ax[1].set_yticks([]);
-	
+
 	if len(titles) != 0:
 		ax[0].set_title(titles[0])
 		ax[1].set_title(titles[1])
@@ -241,10 +241,10 @@ def histPlot(hist,center,width,title=""):
 # plots an image and histogram
 def plotImgHist(imgs,hist,center,width,text=" "):
 	fig,axes = plt.subplots(nrows=1,ncols=len(imgs)+1,figsize=(16,8))
-	
+
 	for ax,im in zip(axes,imgs):
 		ax.imshow(im); ax.set_xticks([]); ax.set_yticks([]);
-	
+
 	axes[-1].bar(center,hist,width=width)
 	axes[-1].set_xlim([0,hist.size])
 	axes[-1].set_ylim([0,np.amax(hist)*1.05])
