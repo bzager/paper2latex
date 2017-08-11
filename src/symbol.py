@@ -97,9 +97,12 @@ class Symbol:
 		cen = np.arange(0,self.phog.size) + 0.5*wid
 		plotImgHist(list(self.hogImg.values()),self.phog,cen,wid,text=str(int(np.sum(self.phog))))
 
-	# 
+	# saves phog vector as .npy file
 	def savePhog(self,subdir,fname):
-		np.save("../train/phog/"+subdir+"/"+fname,self.phog)
+		path = "../train/phog/"+subdir
+		if not os.path.isdir(path):
+			os.mkdir(path)
+		np.save(path+"/"+fname,self.phog)
 
 
 	# Returns title for plotting
