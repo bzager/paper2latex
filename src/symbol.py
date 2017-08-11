@@ -2,6 +2,8 @@
 # Ben Zager
 # Symbol class for paper2latex
 
+import os
+
 import numpy as np
 from tools import calcHOG,resizeImg,plotImgHist
 
