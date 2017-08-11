@@ -3,11 +3,13 @@
 # Main file for paper2latex
 
 import sys
-sys.dont_write_bytecode = True
+import argparse
+
 
 from tools import loadScaled,displayAll
 from segment import segmentation,binarize
 from symbol import Symbol
+from extract import preparePhogs,prepareImgs
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,8 +17,37 @@ plt.rcParams['image.cmap'] = 'gray' # good colormaps: prism,flag
 
 # 
 def main():
+	#args = getArgs()
+	#symbols = runSegment()
+
+	subdirs = ['0','1','2']
+	num = 10
+
+	imgs = prepareImgs(subdirs,num) # load dict of images
+	#phogs = preparePhogs(subdirs,num) # load dict of phogs
+
+	for key,value in imgs.items():
+		print(key)
+		print(value.shape)
+	
+
+# get command line arguments
+# image name and maximum size for images segmentation
+def getArgs():
+	fname = sys.argv[1]
+
+	if len(sys.argv) == 3: 
+		maxsize = sys.argv[2]
+	else: 
+		maxsize = None
+	return fname,maxsize
+
+
+# run segmenation on an image
+def runSegment():
+	fname,maxsize = getArgs()
+
 	print("loading image...")
-	fname,maxsize = getInput()
 	img = loadScaled(fname,maxsize=maxsize)
 
 	radius = 4
@@ -28,25 +59,14 @@ def main():
 	symbols = [Symbol(region,img) for region in props[1:]]
 
 	print("displaying...")
-	#displayAll([img,bimg])
-	#displayAll([sym.image for sym in symbols])
-	#displayAll([sym.original for sym in symbols])
 	displayAll([sym.hogImg for sym in symbols])
 	displayAll([sym.lbp for sym in symbols])
+	plt.tight_layout(pad=0.1,h_pad=None,w_pad=None)
 
-# get image name and maximum size
-def getInput():
-	fname = sys.argv[1]
-
-	if len(sys.argv) == 3: 
-		maxsize = sys.argv[2]
-	else: 
-		maxsize = None
-	return fname,maxsize
+	return symbols
 
 
 if __name__=="__main__":
 	main()
-	plt.tight_layout(pad=0.1,h_pad=None,w_pad=None)
 	plt.show()
 

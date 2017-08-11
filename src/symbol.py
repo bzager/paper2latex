@@ -11,6 +11,7 @@ class Symbol:
 	def __init__(self,props,img=None,size=45,extra=5):
 
 		self.props = props # 
+		self.name = None
 
 		self.hog = {} # 
 		self.hogImg = {} # 
@@ -25,6 +26,7 @@ class Symbol:
 			self.initTrain(img=img)
 
 		self.setSquare(size=size,extra=extra) # 
+		
 
 	# 
 	def initProps(self,props,img,size,extra):
@@ -95,6 +97,10 @@ class Symbol:
 		cen = np.arange(0,self.phog.size) + 0.5*wid
 		plotImgHist(list(self.hogImg.values()),self.phog,cen,wid,text=str(int(np.sum(self.phog))))
 
+	# 
+	def savePhog(self,subdir,fname):
+		np.save("../train/phog/"+subdir+"/"+fname,self.phog)
+
 
 	# Returns title for plotting
 	def getTitle(self):
@@ -108,7 +114,7 @@ class Symbol:
 
 
 """
-***Possibly useful attributes***
+***Possibly useful***
 
 bbox_area : int Number of pixels of bounding box.
 convex_area : int Number of pixels of convex hull image.
