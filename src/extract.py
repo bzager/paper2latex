@@ -9,7 +9,7 @@
 # Loads all images of those symbols and calculates the phog features
 # Saved as numpy binary files (.npy) in ../train/phog/[symbol name]
 
-# Use * as name to extract all 
+# Use * as name to extract all
 
 import sys
 import os
@@ -20,7 +20,7 @@ from tools import load,loadAll
 from symbol import Symbol
 
 
-# 
+#
 def main():
 	root = "../train/"
 	dirname = "images/"
@@ -40,14 +40,14 @@ def getArgs():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("fnames",nargs="+")
 	args = parser.parse_args()
-	
+
 	return args.fnames
 
-# calculates and saves Phog features for all training images 
+# calculates and saves Phog features for all training images
 # of a single class
 def extract(subdir,fname):
 	phogname = os.path.splitext(fname)[0] # remove .jpg
-	
+
 	if os.path.isfile("../train/phog/"+subdir+"/"+phogname+".npy"):
 		print("    "+phogname+" (already saved)")
 		return np.load("../train/phog/"+subdir+"/"+phogname+".npy")
@@ -55,7 +55,7 @@ def extract(subdir,fname):
 	img = load(fname,"../train/images/"+subdir)
 	sym = Symbol(props=None,img=np.invert(img))
 	sym.calcPhog()
-	
+
 	print("    "+phogname)
 	sym.savePhog(subdir,phogname)
 
@@ -76,7 +76,7 @@ def extractDir(root,dirname,subdir,num=None):
 	return np.asarray(phogs)
 
 """
-# calculates and saves Phog features of all training images 
+# calculates and saves Phog features of all training images
 def extractAll(root,direc):
 	for dirname in os.listdir(root+direc):
 		phogs = extractDir(root,direc,dirname)
@@ -94,14 +94,14 @@ def int2OneHot(vec):
 	labels[np.arange(vec.size),vec] = 1
 	return labels
 
-# converts 
+# converts
 def oneHot2Int(oneHot):
 	return np.where(oneHot)[0][0]
 
-# 
+#
 def prepLabels(labels,form):
 	labels = np.asarray(labels)
-	
+
 	if form == "oh":
 		return int2OneHot(labels)
 
@@ -111,7 +111,7 @@ def prepLabels(labels,form):
 # creates stack of phog vectors for all training data
 # dimensions are (num*len(subdirs),phog.size)
 # labels is vector of integer label for each row
-def prepPhogs(subdirs,num,form="int",root="../train/",dirname="images/"):	
+def prepPhogs(subdirs,num,form="int",root="../train/",dirname="images/"):
 	allPhogs = []
 	labels = []
 	labelDict = getLabels(subdirs)
