@@ -18,7 +18,7 @@ from skimage import io,util,transform,filters,morphology,feature,measure,segment
 
 # loads grayscale image from given directory
 def load(name,directory=""):
-	return io.imread("../"+directory+"/"+name,as_grey=True)
+	return io.imread(directory+"/"+name,as_grey=True)
 
 # loads image, scaling it to below max number of pixels
 def loadScaled(name,directory="",maxsize=1000000):
@@ -36,12 +36,21 @@ def loadScaled(name,directory="",maxsize=1000000):
 # loads all images from a directory
 def loadAll(directory="",maxsize=400000,count=20):
 	imgs = []
+<<<<<<< HEAD
 
 	for fname in os.listdir("../"+directory+"/")[:count]:
 		if fname==".DS_Store":
 			continue
 		imgs.append(loadScaled(fname,directory,maxsize=maxsize))
 
+=======
+	
+	for fname in os.listdir(directory+"/")[:count]:
+		if fname==".DS_Store":
+			continue
+		imgs.append(loadScaled(fname,directory+"/",maxsize=maxsize))
+	
+>>>>>>> 1c66e2078dfba59f17e4e7677dcfabb0f936feef
 	return imgs
 
 # intensity limits for img,
