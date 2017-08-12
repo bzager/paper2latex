@@ -1,6 +1,9 @@
 # classifier.py
 # Ben Zager
-# SVM classifier on PHOG features
+# Test classifier on PHOG features or original images
+
+# Run:
+# python classifier.py [# training imgs for each class] [# test imgs for each class]
 
 import sys
 
@@ -53,11 +56,11 @@ if __name__=="__main__":
 	numTrain = int(sys.argv[1])
 	numTest = int(sys.argv[2])
 	num = numTrain + numTest
-
 	names = [str(i) for i in range(0,10)] # symbols to use
 	form = "int" # "oh" -> one-hot or "int" -> integer label format
 
 	phogs,labels = prepPhogs(names,num,form=form)
+	#imgs,labels = prepImgs(names,num,form=form)
 	phogs,labels,testPhogs,testLabels = getTest(phogs,labels,num,numTest)
 
 	results = runSVM(phogs,labels,testPhogs)
