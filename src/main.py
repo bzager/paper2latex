@@ -9,7 +9,7 @@ import argparse
 from tools import loadScaled,displayAll
 from segment import segmentation,binarize
 from symbol import Symbol
-from extract import preparePhogs,prepareImgs
+from extract import prepPhogs,prepImgs
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,17 +20,17 @@ def main():
 	#args = getArgs()
 	#symbols = runSegment()
 
-	subdirs = ['0','1','2']
-	num = 10
+	names = [str(i) for i in range(0,10)] # integers 0-9
+	num = 100 # number of samples to use in each category
+	form = "oh" # "oh" -> one-hot or "int" -> integer label format
 
-	imgs = prepareImgs(subdirs,num) # load dict of images
-	#phogs = preparePhogs(subdirs,num) # load dict of phogs
+	phogs,labels = prepPhogs(names,num,form=form) # 
+	#imgs,labels = prepImgs(names,num,form=form) #
 
-	for key,value in imgs.items():
-		print(key)
-		print(value.shape)
+	print(phogs.shape)
+	print(labels)
+
 	
-
 # get command line arguments
 # image name and maximum size for images segmentation
 def getArgs():
