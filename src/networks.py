@@ -1,8 +1,8 @@
 # train.py
 # Charles Winston
 # Neural network module for training character classifier
-import sys
 
+import sys
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from extract import prepPhogs
