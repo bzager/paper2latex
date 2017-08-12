@@ -48,9 +48,9 @@ def getArgs():
 def extract(subdir,fname):
 	phogname = os.path.splitext(fname)[0] # remove .jpg
 	
-	if os.path.isfile("../train/phog/"+fname):
+	if os.path.isfile("../train/phog/"+subdir+"/"+phogname+".npy"):
 		print("    "+phogname+" (already saved)")
-		return np.load("../train/phog/"+fname)
+		return np.load("../train/phog/"+subdir+"/"+phogname+".npy")
 
 	img = load(fname,"../train/images/"+subdir)
 	sym = Symbol(props=None,img=np.invert(img))
@@ -82,27 +82,60 @@ def extractAll(root,direc):
 		phogs = extractDir(root,direc,dirname)
 """
 
-# creates dictionary of phogs matrices
-# keys are symbol names, values are phog matrices
-def preparePhogs(subdirs,num,root="../train/",dirname="images/"):	
-	allPhogs = {}
+# creates dict mapping category names to integer labels
+def getLabels(names):
+	return dict(zip(names,np.arange(len(names))))
+
+
+# convert integer label vector to stack of one-hot vectors
+# output: matrix where each row is a one-hot vector
+def int2OneHot(vec):
+	labels = np.zeros([vec.size,np.amax(vec)+1])
+	labels[np.arange(vec.size),vec] = 1
+	return labels
+
+# converts 
+def oneHot2Int(oneHot):
+	return np.where(oneHot)[0][0]
+
+# 
+def prepLabels(labels,form):
+	labels = np.asarray(labels)
+	
+	if form == "oh":
+		return int2OneHot(labels)
+
+	return labels
+
+
+# creates stack of phog vectors for all training data
+# dimensions are (num*len(subdirs),phog.size)
+# labels is vector of integer label for each row
+def prepPhogs(subdirs,num,form="int",root="../train/",dirname="images/"):	
+	allPhogs = []
+	labels = []
+	labelDict = getLabels(subdirs)
 
 	for subdir in subdirs:
 		phogs = extractDir(root,dirname,subdir,num)
-		allPhogs[subdir] = phogs
+		allPhogs.append(phogs)
+		labels += [labelDict[subdir] for i in range(phogs.shape[0])]
 
-	return allPhogs
+	return np.concatenate(allPhogs),prepLabels(labels,form)
 
-# creates dictionary of images
-# each values is an array of dimension (num,45,45)
-def prepareImgs(subdirs,num,root="../train/",dirname="images/"):
-	allImgs = {}
+# creates array of images
+# (num*len(subdirs),45,45)
+def prepImgs(subdirs,num,form="int",root="../train/",dirname="images/"):
+	allImgs = []
+	labels = []
+	labelDict = getLabels(subdirs)
 
 	for subdir in subdirs:
 		imgs = loadAll(directory=root+dirname+subdir,count=num)
-		allImgs[subdir] = np.asarray(imgs)
+		allImgs.append(np.asarray(imgs))
+		labels += [labelDict[subdir] for i in range(allImgs[-1].shape[0])]
 
-	return allImgs
+	return np.concatenate(allImgs),prepLabels(labels,form)
 
 
 
