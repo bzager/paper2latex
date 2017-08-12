@@ -49,14 +49,13 @@ def extract(subdir,fname):
 	phogname = os.path.splitext(fname)[0] # remove .jpg
 
 	if os.path.isfile("../train/phog/"+subdir+"/"+phogname+".npy"):
-		print("    "+phogname+" (already saved)")
 		return np.load("../train/phog/"+subdir+"/"+phogname+".npy")
 
 	img = load(fname,"../train/images/"+subdir)
 	sym = Symbol(props=None,img=np.invert(img))
 	sym.calcPhog()
 
-	print("    "+phogname)
+	print("    "+phogname+"saved")
 	sym.savePhog(subdir,phogname)
 
 	return sym.phog
