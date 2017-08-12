@@ -30,37 +30,39 @@ def getTest(phogs,labels,num,numTest):
 	phogs = np.delete(phogs,inds,axis=0)
 	labels = np.delete(labels,inds,axis=0)
 	
-	return phogs,labels,testPhogs,testLabels,inds
+	return phogs,labels,testPhogs,testLabels
 
 # 
 def getAccuracy(labels,results):
 	correct = np.sum(np.equal(labels,results))
 	return float(correct) / labels.size
 
-
-
-if __name__=="__main__":
-
-	numTrain = int(sys.argv[1])
-	numTest = int(sys.argv[2])
-	num = numTrain + numTest
-	names = [str(i) for i in range(0,10)]
-
-	phogs,labels = prepPhogs(names,num)
-	imgs,labels = prepImgs(names,num)
-	phogs,labels,testPhogs,testLabels,inds = getTest(phogs,labels,num,numTest)
-
-	C = 1.0
+# 
+def runSVM(phogs,labels,testPhogs):
+	C = 0.5
 	gamma = "auto"
 
 	clf = OneVsRestClassifier(SVC(C=C,gamma=gamma))
 	clf.fit(phogs,labels)
-
 	results = clf.predict(testPhogs)
+
+	return results
+
+
+if __name__=="__main__":
+	numTrain = int(sys.argv[1])
+	numTest = int(sys.argv[2])
+	num = numTrain + numTest
+
+	names = [str(i) for i in range(0,10)] # symbols to use
+	form = "int" # "oh" -> one-hot or "int" -> integer label format
+
+	phogs,labels = prepPhogs(names,num,form=form)
+	phogs,labels,testPhogs,testLabels = getTest(phogs,labels,num,numTest)
+
+	results = runSVM(phogs,labels,testPhogs)
+
 	accuracy = getAccuracy(testLabels,results)
-	
-	print(testLabels)
-	print(results)
 	print(np.around(accuracy,2))
 
 

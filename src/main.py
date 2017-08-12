@@ -17,18 +17,8 @@ plt.rcParams['image.cmap'] = 'gray' # good colormaps: prism,flag
 
 # 
 def main():
-	#args = getArgs()
-	#symbols = runSegment()
-
-	names = [str(i) for i in range(0,10)] # integers 0-9
-	num = 100 # number of samples to use in each category
-	form = "oh" # "oh" -> one-hot or "int" -> integer label format
-
-	phogs,labels = prepPhogs(names,num,form=form) # 
-	#imgs,labels = prepImgs(names,num,form=form) #
-
-	print(phogs.shape)
-	print(labels)
+	args = getArgs()
+	symbols = runSegment()
 
 	
 # get command line arguments
