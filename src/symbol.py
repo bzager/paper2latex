@@ -100,8 +100,8 @@ class Symbol:
 		plotImgHist(list(self.hogImg.values()),self.phog,cen,wid,text=str(int(np.sum(self.phog))))
 
 	# saves phog vector as .npy file
-	def savePhog(self,subdir,fname):
-		path = "../train/phog/"+subdir
+	def savePhog(self,name,fname):
+		path = "../train/phog/"+name
 		if not os.path.isdir(path):
 			os.mkdir(path)
 		np.save(path+"/"+fname,self.phog)
