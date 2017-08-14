@@ -24,15 +24,20 @@ def main():
 	num = numTrain + numTest
 	names = extract.lowercase #+ extract.uppercase # symbols to use
 
-	trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTest,numTrain)
-	trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTest,numTrain)
+	#trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTrain,numTest)
+	trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTrain,numTest)
+
+	print(trainImgs.shape)
+	print(trainLabels.shape)
+	print(testImgs.shape)
+	print(testLabels.shape)
 
 	C = 0.5
 	gamma = "auto"
 
-	results = runSVM(trainPhogs,trainLabels,testPhogs,C=C,gamma=gamma)
-	accuracy = getAccuracy(results,testLabels)
-	print(np.around(accuracy,2))
+	#results = runSVM(trainPhogs,trainLabels,testPhogs,C=C,gamma=gamma)
+	#accuracy = getAccuracy(results,testLabels)
+	#print(np.around(accuracy,2))
 
 
 # calculate accuracy 

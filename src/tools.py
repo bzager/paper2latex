@@ -92,6 +92,8 @@ def padExtra(img,extra):
 # resizes and pads image to given size
 def resizeImg(img,size=45,extra=5):
 	square = squareImg(img)
+	if size == None:
+		return square
 	scale = size / np.sqrt(square.size)
 	rescaled = rescale(square,scale) # size x size
 	return padExtra(rescaled,extra) # (size+extra) x (size+extra)
@@ -253,8 +255,8 @@ def plotImgHist(imgs,hist,center,width,text=" "):
 
 
 # calculates histogram of data and displays next to an image
-def fullImgHist(img,data,text=""):
-	h,cen,wid = hist(data)
+def fullImgHist(img,data,nbins=256,text=""):
+	h,cen,wid = hist(data,nbins=nbins)
 	plotImgHist(img,h,cen,wid,text=text)
 
 # calculates and plots histogram of [data]

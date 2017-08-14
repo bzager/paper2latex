@@ -77,12 +77,18 @@ def int2OneHot(vec):
 def oneHot2Int(oneHot):
 	return np.where(oneHot)[0][0]
 
-# randomly reorders the data
-def shuffle(data,labels):
-	toShuffle = np.append(data,labels[:,None],axis=1)
+# does in place random reordering of phog data
+def shufflePhog(phogs,labels):
+	toShuffle = np.append(data,temp_labels,axis=1)
 	np.random.shuffle(toShuffle)
 
 	return toShuffle[:,:-1],toShuffle[:,-1].astype(np.int)
+
+# 
+def shuffleImgs(imgs,labels):
+	inds = np.random.permutation(labels.size)
+	return imgs[inds,:,:],labels[inds]
+
 
 # returns a random permutation of num elements of a list
 def permute(lst,num):
@@ -168,6 +174,8 @@ def prepImgs(names,num):
 		imgs = loadAll(directory=root+imgDir+name,count=num)
 		allImgs.append(np.asarray(imgs))
 		labels += [labelDict[name] for i in range(allImgs[-1].shape[0])]
+		print(name+" "+str(len(imgs))+" "+str(num))
+		print(allImgs[-1].shape)
 
 	return np.concatenate(allImgs),np.asarray(labels)
 
@@ -199,7 +207,8 @@ def initPhogs(names,numTrain,numTest,random=True):
 	num = numTrain+numTest
 	phogs,labels = prepPhogs(names,num,random=random)
 	trainPhogs,trainLabels,testPhogs,testLabels = getTest(phogs,labels,num,numTest)
-	trainPhogs,trainLabels = shuffle(trainPhogs,trainLabels)
+	
+	#trainPhogs,trainLabels = shufflePhogs(trainPhogs,trainLabels)
 
 	return trainPhogs,trainLabels,testPhogs,testLabels
 
@@ -208,8 +217,8 @@ def initImgs(names,numTrain,numTest):
 	num = numTrain+numTest
 	imgs,labels = prepImgs(names,num)
 	trainImgs,trainLabels,testImgs,testLabels = getTest(imgs,labels,num,numTest)
-
-	trainImgs,trainLabels = shuffle(trainImgs,trainLabels)
+	
+	#trainImgs,trainLabels = shuffleImgs(trainImgs,trainLabels)
 
 	return trainImgs,trainLabels,testImgs,testLabels
 
