@@ -73,17 +73,22 @@ class Symbol:
 		self.square = resizeImg(self.image,size=size,extra=extra)
 
 	# histogram of oriented gradients
-	def calcHog(self,cell):
-		hog,hogImg = calcHOG(self.square,orientations=8,cell=(cell,cell),block=(1,1),vector=True)
+	def calcHog(self,cell,vis=True):
+		if vis:
+			hog,hogImg = calcHOG(self.square,orientations=8,cell=(cell,cell),block=(1,1),vector=True,vis=vis)
+			self.hogImg[cell] = hogImg
+		else:
+			hog = calcHOG(self.square,orientations=8,cell=(cell,cell),block=(1,1),vector=True,vis=vis)
+		
 		self.hog[cell] = hog
-		self.hogImg[cell] = hogImg
+		
 
 	# 
-	def calcPhog(self,cells=[5,10,20]):
+	def calcPhog(self,cells=[5,10,20],vis=False):
 		self.hog = {}
 		self.hogImg = {}
 		for cell in cells:
-			self.calcHog(cell=cell)
+			self.calcHog(cell,vis=vis)
 		self.phog = np.concatenate(list(self.hog.values()))
 		
 

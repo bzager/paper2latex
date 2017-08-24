@@ -95,13 +95,24 @@ def permute(lst,num):
 	inds = np.random.permutation(len(lst))[:num]
 	return lst[inds]
 
-# gets indices for separating test data
-def getInds(num,numClass,numTest):
-	inds = []
 
-	for i in range(numClass):
-		for j in range(numTest):
-			inds.append(i*num + j)
+# gets indices for separating test data
+def getInds(num,numClass,numTest,counts,labels):
+	inds = []
+	cur = 0
+	prop = numTest / float(num) # (num test) / total
+
+	for name,count in counts.items():
+		if count == num:
+			numTest_actual = numTest
+		else:
+			numTest_actual = int(count*prop)
+
+		print(name+" count: "+str(count)+" numUse: "+ str(numTest_actual))
+		for j in range(numTest_actual):
+			inds.append(cur+j)
+
+		cur += count
 
 	return inds
 
@@ -115,7 +126,7 @@ def extract(name,fname):
 
 	img = load(fname,root+imgDir+name)
 	sym = Symbol(props=None,img=np.invert(img))
-	sym.calcPhog()
+	sym.calcPhog(vis=False)
 	
 	print("    "+phogname+" saved")
 	sym.savePhog(name,phogname)
@@ -130,7 +141,6 @@ def extractDir(name,num=None,random=False):
 	if not os.path.isdir(path) or name == ".DS_Store":
 		return
 
-	phogs = []
 	fnames = os.listdir(path)
 	if num != None and num >= len(fnames): 
 		num = None
@@ -139,7 +149,8 @@ def extractDir(name,num=None,random=False):
 	#else: files = fnames[:num]
 
 	files = fnames[:num]
-
+	phogs = []
+	
 	print(name+" "+str(len(fnames)))
 	for fname in files:
 		if fname == ".DS_Store": continue
@@ -152,9 +163,10 @@ def extractDir(name,num=None,random=False):
 # creates stack of phog vectors for all training data
 # dimensions are (num*len(names),phog.size)
 # labels is vector of integer label for each row
-def prepPhogs(names,num,random=True):	
+def prepPhogs(names,num,random=False):	
 	allPhogs = []
 	labels = []
+	counts = {}
 	labelDict = getLabels(names)
 
 	for name in names:
@@ -162,34 +174,40 @@ def prepPhogs(names,num,random=True):
 		if phogs is None:
 			continue
 		allPhogs.append(phogs)
-		labels += [labelDict[name] for i in range(phogs.shape[0])]
+		count = phogs.shape[0]
+		counts[name] = count
+		labels += [labelDict[name] for i in range(count)]
 
-	return np.concatenate(allPhogs),np.asarray(labels)
+	return np.concatenate(allPhogs),np.asarray(labels),counts
 
 # creates array of images
 # (num*len(names),45,45)
 def prepImgs(names,num):
 	allImgs = []
 	labels = []
+	counts = {}
 	labelDict = getLabels(names)
 
 	for name in names:
 		imgs = loadAll(directory=root+imgDir+name,count=num)
 		allImgs.append(np.asarray(imgs))
-		labels += [labelDict[name] for i in range(allImgs[-1].shape[0])]
+		count = allImgs[-1].shape[0]
+		labels += [labelDict[name] for i in range(count)]
+		counts[name] = count
+
 		print(name+" "+str(len(imgs))+" "+str(num))
 		print(allImgs[-1].shape)
 
-	return np.concatenate(allImgs),np.asarray(labels)
+	return np.concatenate(allImgs),np.asarray(labels),counts
 
 
 # divides the loaded data into training and test sets
 # also shuffles the order of the training data
 # numTest is the number of test samples from each class
 # labels must be in integer format
-def getTest(data,labels,num,numTest):
+def getTest(data,labels,num,numTest,counts):
 	numClass = np.unique(labels).size # number of unique classes
-	inds = getInds(num,numClass,numTest) # list of indices to make tests
+	inds = getInds(num,numClass,numTest,counts,labels) # list of indices to make tests
 
 	testLabels = labels[inds]
 
@@ -208,8 +226,8 @@ def getTest(data,labels,num,numTest):
 # loads data, splits into train and test data, shuffles train data 
 def initPhogs(names,numTrain,numTest,random=True):
 	num = numTrain+numTest
-	phogs,labels = prepPhogs(names,num,random=random)
-	trainPhogs,trainLabels,testPhogs,testLabels = getTest(phogs,labels,num,numTest)
+	phogs,labels,counts = prepPhogs(names,num,random=random)
+	trainPhogs,trainLabels,testPhogs,testLabels = getTest(phogs,labels,num,numTest,counts)
 	
 	#trainPhogs,trainLabels = shufflePhogs(trainPhogs,trainLabels)
 
@@ -218,8 +236,8 @@ def initPhogs(names,numTrain,numTest,random=True):
 # initializes image data for classification
 def initImgs(names,numTrain,numTest):
 	num = numTrain+numTest
-	imgs,labels = prepImgs(names,num)
-	trainImgs,trainLabels,testImgs,testLabels = getTest(imgs,labels,num,numTest)
+	imgs,labels,counts = prepImgs(names,num)
+	trainImgs,trainLabels,testImgs,testLabels = getTest(imgs,labels,num,numTest,counts)
 	
 	#trainImgs,trainLabels = shuffleImgs(trainImgs,trainLabels)
 

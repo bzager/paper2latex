@@ -16,21 +16,22 @@ def main():
 	numTrain = int(sys.argv[1])
 	numTest = int(sys.argv[2])
 	num = numTrain + numTest
-	names = extract.integers
+	names = extract.lowercase
 
 	# get training and testing data
 	trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTest,numTrain,random=False)
 	#trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTest,numTrain)
 	
-	phog_dim = phogs.shape[1]
-	#img_dim = imgs.shape[1:]
+	phog_dim = trainPhogs.shape[1]
+	#img_dim = trainImgs.shape[1:]
 	num_classes = len(names)
 	batch_size = 32
 	dropout_rate = 0.1
 	epochs = 10
+	size = "small"
 
 	model = simple_model(phog_dim,dropout_rate,num_classes)
-	#model = convolutional_Img(img_dim,dropout_rate,num_classes)
+	#model = convolutional_Img(img_dim,dropout_rate,num_classes,size=size)
 	#model = convolutional_Phog(phog_dim,dropout_rate,num_classes)
 
 	model = train_model(model,trainPhogs,trainLabels,epochs,batch_size)
@@ -39,10 +40,11 @@ def main():
 	print("\n")
 	print("Loss: "+str(np.around(score[0],2)))
 	print("Accuracy: "+str(np.around(score[1],2)))
+	print("\n")
 	
 
 # a simple neural network
-def simple_model(input_dim, dropout_rate, num_classes):
+def simple_model(input_dim,dropout_rate,num_classes):
 	# build the network
 	model = Sequential()
 	model.add(Dense(32,
@@ -68,26 +70,26 @@ def simple_model(input_dim, dropout_rate, num_classes):
 
 # convolutional network using 2d binary image input
 # machinelearningmastery.com/handwritten-digit-recognition-using-convolutional-neural-networks-python-keras/
-def convolutional_Img(input_dim, dropout_rate, num_classes):
+def convolutional_Img(input_dim,dropout_rate,num_classes,size="small"):
 	# Build
 	model = Sequential()
 	model.add(Conv2D(32, (5,5), input_dim=input_dim, activation='relu'))
 	model.add(MaxPooling2D(pool_size=(2,2)))
 
 	# Small network
-	model.add(Dropout(dropout_rate))
-	model.add(Flatten())
-	model.add(Dense(128, activation='relu'))
+	if size == "small":
+		model.add(Dropout(dropout_rate))
+		model.add(Flatten())
+		model.add(Dense(128, activation='relu'))
 
-	"""
-	# Large Network
-	model.add(Conv2D(16, (3,3), activation='relu'))
-	model.add(MaxPooling2D(pool_size=(2,2)))
-	model.add(Dropout(dropout_rate))
-	model.add(Flatten())
-	model.add(Dense(128, activation='relu'))
-	model.add(Dense(50, activation='relu'))
-	"""
+	# Big Network
+	elif size == "big":
+		model.add(Conv2D(16, (3,3), activation='relu'))
+		model.add(MaxPooling2D(pool_size=(2,2)))
+		model.add(Dropout(dropout_rate))
+		model.add(Flatten())
+		model.add(Dense(128, activation='relu'))
+		model.add(Dense(50, activation='relu'))
 	
 	# Output layer
 	model.add(Dense(num_classes, activation='softmax')) 
@@ -98,7 +100,7 @@ def convolutional_Img(input_dim, dropout_rate, num_classes):
 	return model
 
 # convolutional network using 1d phog vector input
-def convolutional_Phog(input_dim, dropout_rate, num_classes):
+def convolutional_Phog(input_dim,dropout_rate,num_classes):
 	model = Sequential()
 	#model.add(Conv1D())
 

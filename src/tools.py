@@ -172,8 +172,8 @@ def properties(labels):
 
 # histogram of oriented gradients
 # returns tuple (feature vector, visualization w/ same size as input)
-def calcHOG(img,orientations=8,cell=(5,5),block=(1,1),vector=True):
-	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=block,block_norm="L2-Hys",visualise=True,feature_vector=vector)
+def calcHOG(img,orientations=8,cell=(5,5),block=(1,1),vector=True,vis=True):
+	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=block,block_norm="L2-Hys",visualise=vis,feature_vector=vector)
 
 # local binary pattern
 # R = radius of neighbor pixels, P = number of pixels at that radius
