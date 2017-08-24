@@ -47,8 +47,12 @@ def getAccuracy(results,labels):
 	return float(correct) / labels.size
 
 # 
-def runSVM(phogs,labels,testPhogs,C=1.0,gamma="auto"):
-	clf = OneVsRestClassifier(SVC(C=C,gamma=gamma))
+def runSVM(phogs,labels,testPhogs,C=1.0,gamma="auto",style="ovr"):
+	if style == "ovr":
+		clf = OneVsRestClassifier(SVC(C=C,gamma=gamma))
+	else:
+		clf = SVC(C=C,gamma=gamma,decision_function_shape='ovo')
+		
 	clf.fit(phogs,labels)
 	results = clf.predict(testPhogs)
 

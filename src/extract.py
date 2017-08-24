@@ -125,17 +125,20 @@ def extract(name,fname):
 # calculates and saves Phog features of training image
 # returns matrix of dimension (num,phogs.size)
 # can either be first num samples, or num random samples
-def extractDir(name,num=None,random=True):
+def extractDir(name,num=None,random=False):
 	path = root+imgDir+name
 	if not os.path.isdir(path) or name == ".DS_Store":
 		return
 
 	phogs = []
 	fnames = os.listdir(path)
-	if num >= len(fnames): num = None
+	if num != None and num >= len(fnames): 
+		num = None
 
-	if random: files = permute(fnames,num)
-	else: files = fnames[:num]
+	#if random: files = permute(fnames,num)
+	#else: files = fnames[:num]
+
+	files = fnames[:num]
 
 	print(name+" "+str(len(fnames)))
 	for fname in files:
