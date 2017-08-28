@@ -7,6 +7,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense,Activation,Dropout,Flatten
 from keras.layers.convolutional import Conv1D,Conv2D,MaxPooling1D,MaxPooling2D
+from keras import regularizers
 
 import extract
 from extract import initPhogs,initImgs,int2OneHot,oneHot2Int
@@ -18,21 +19,23 @@ def main():
 	num = numTrain + numTest
 	names = extract.lowercase
 
-	# get training and testing data
-	trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTest,numTrain,random=False)
-	#trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTest,numTrain)
-	
-	phog_dim = trainPhogs.shape[1]
-	#img_dim = trainImgs.shape[1:]
 	num_classes = len(names)
 	batch_size = 32
 	dropout_rate = 0.1
-	epochs = 10
-	size = "small"
+	epochs = 4
+	size = "small" # size of CNN
 
-	model = simple_model(phog_dim,dropout_rate,num_classes)
-	#model = convolutional_Img(img_dim,dropout_rate,num_classes,size=size)
-	#model = convolutional_Phog(phog_dim,dropout_rate,num_classes)
+	# get training and testing data
+	trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTest,numTrain)
+	#trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTest,numTrain)
+	
+	phog_dim = trainPhogs[0].shape
+	#img_dim = trainImgs[0].shape
+	hidden_size = 32
+
+	model = simple_model(phog_dim,hidden_size,dropout_rate,num_classes)
+	#model = conv_img(img_dim,dropout_rate,num_classes,size=size)
+	#model = conv_phog(phog_dim,dropout_rate,num_classes)
 
 	model = train_model(model,trainPhogs,trainLabels,epochs,batch_size)
 	score = test_model(model,testPhogs,testLabels,batch_size)
@@ -44,63 +47,66 @@ def main():
 	
 
 # a simple neural network
-def simple_model(input_dim,dropout_rate,num_classes):
-	# build the network
-	model = Sequential()
-	model.add(Dense(32,
-					input_dim=input_dim,
-					activation='relu',
-					use_bias='true',
-					kernel_initializer='random_uniform',
-					bias_initializer='zeros',
-					))
-	model.add(Dropout(dropout_rate))
-	model.add(Dense(num_classes,
-					activation='softmax',
-					use_bias='true',
-					kernel_initializer='random_uniform',
-					bias_initializer='zeros',
-					))
-	model.add(Dropout(dropout_rate))
+def simple_model(input_shape,hidden_size,dropout_rate,num_classes):
+	kreg = 0.01
+	breg = 0.01
 
-	# configure learning process
+	model = Sequential()
+	model.add(Dense(hidden_size,input_shape=input_shape,activation='relu',
+								kernel_initializer='random_uniform',
+								bias_initializer='zeros',
+								kernel_regularizer=regularizers.l2(kreg),
+								bias_regularizer=regularizers.l2(breg)))
+	model.add(Dropout(dropout_rate))
+	model.add(Dense(num_classes,activation='softmax')) # output
 	model.compile(optimizer='rmsprop',loss='categorical_crossentropy',metrics=['accuracy'])
 
 	return model
 
 # convolutional network using 2d binary image input
 # machinelearningmastery.com/handwritten-digit-recognition-using-convolutional-neural-networks-python-keras/
-def convolutional_Img(input_dim,dropout_rate,num_classes,size="small"):
-	# Build
+# small architecture: 
+# input->Conv(32,5x5,ReLU)->Pool->Dropout->Dense(128,ReLU)->Dense(numclass,softmax)
+# big architecture: 
+# input->Conv(32,5x5,ReLU)->Pool->Conv(16,3x3,ReLU)->Pool->Dropout->Dense(128,ReLU)->Dense(50,ReLU)->Dense(numclass,softmax)
+def conv_img(input_shape,dropout_rate,num_classes,size='small'):
+	
+	num_filters = 32
+	ker_size = 5
+
 	model = Sequential()
-	model.add(Conv2D(32, (5,5), input_dim=input_dim, activation='relu'))
+	model.add(Conv2D(num_filters,(ker_size,ker_size),input_shape=input_shape,padding='same',activation='relu'))
 	model.add(MaxPooling2D(pool_size=(2,2)))
 
-	# Small network
-	if size == "small":
-		model.add(Dropout(dropout_rate))
-		model.add(Flatten())
-		model.add(Dense(128, activation='relu'))
+	if size == 'small': 
+		model = add_small(model)
+	elif size == 'big': 
+		model = add_big(model)
 
-	# Big Network
-	elif size == "big":
-		model.add(Conv2D(16, (3,3), activation='relu'))
-		model.add(MaxPooling2D(pool_size=(2,2)))
-		model.add(Dropout(dropout_rate))
-		model.add(Flatten())
-		model.add(Dense(128, activation='relu'))
-		model.add(Dense(50, activation='relu'))
-	
-	# Output layer
-	model.add(Dense(num_classes, activation='softmax')) 
+	model.add(Dense(num_classes,activation='softmax')) # output
+	model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
 
-	# Compile
-	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+	return model
+
+# 
+def add_small(model):
+	model.add(Dropout(dropout_rate))
+	model.add(Flatten())
+	model.add(Dense(128,activation='relu'))
+
+	return model
+
+# 
+def add_big(model):
+	model.add(Conv2D(16,(3,3),activation='relu'))
+	model.add(MaxPooling2D(pool_size=(2,2)))
+	model = setup_small(model)
+	model.add(Dense(50,activation='relu'))
 
 	return model
 
 # convolutional network using 1d phog vector input
-def convolutional_Phog(input_dim,dropout_rate,num_classes):
+def conv_phog(input_shape,dropout_rate,num_classes):
 	model = Sequential()
 	#model.add(Conv1D())
 
@@ -110,14 +116,38 @@ def convolutional_Phog(input_dim,dropout_rate,num_classes):
 
 
 # train model
-def train_model(model, x_train, y_train, epochs, batch_size):
-	model.fit(x_train, int2OneHot(y_train), epochs=epochs, batch_size=batch_size, shuffle=True)
+def train_model(model,x_train,y_train,x_test,y_test,epochs,batch_size):
+	model.fit(x_train,int2OneHot(y_train),validation_data=(x_test,int2OneHot(y_test)),epochs=epochs,batch_size=batch_size,shuffle=True)
 
 	return model
 
-def test_model(model, x_test, y_test, batch_size):
-	# test model
-	return model.evaluate(x_test, int2OneHot(y_test), batch_size=batch_size)
+# test model
+def test_model(model,x_test,y_test,batch_size):
+	return model.evaluate(x_test,int2OneHot(y_test),batch_size=batch_size)
+
+# saves model weights as HDF5 file
+def save_weights(model,path,name):
+	model.save_weights(path+name)
+
+# loads saved model weights
+def load_weights(model,path,name):
+	return model.load_weights(path+name)
+
+
+# prints and returns info about the model
+def get_info(model):
+	summ = model.summary()
+	weights = model.get_weights()
+
+	return summ,weights
+
+# approximates size of hidden layer
+# scale should be in range 2-10
+# stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
+def calcHiddenSize(trainData,num_classes,scale=5.0):
+	num_samples = trainData.shape[0]
+	input_size = trainData.shape[1]
+	return int(np.floor(num_samples / (scale*(input_size+num_classes))))
 
 
 if __name__=="__main__":

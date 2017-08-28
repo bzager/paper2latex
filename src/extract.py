@@ -108,7 +108,6 @@ def getInds(num,numClass,numTest,counts,labels):
 		else:
 			numTest_actual = int(count*prop)
 
-		print(name+" count: "+str(count)+" numUse: "+ str(numTest_actual))
 		for j in range(numTest_actual):
 			inds.append(cur+j)
 
@@ -195,9 +194,6 @@ def prepImgs(names,num):
 		labels += [labelDict[name] for i in range(count)]
 		counts[name] = count
 
-		print(name+" "+str(len(imgs))+" "+str(num))
-		print(allImgs[-1].shape)
-
 	return np.concatenate(allImgs),np.asarray(labels),counts
 
 
@@ -229,8 +225,6 @@ def initPhogs(names,numTrain,numTest,random=True):
 	phogs,labels,counts = prepPhogs(names,num,random=random)
 	trainPhogs,trainLabels,testPhogs,testLabels = getTest(phogs,labels,num,numTest,counts)
 	
-	#trainPhogs,trainLabels = shufflePhogs(trainPhogs,trainLabels)
-
 	return trainPhogs,trainLabels,testPhogs,testLabels
 
 # initializes image data for classification
@@ -239,9 +233,7 @@ def initImgs(names,numTrain,numTest):
 	imgs,labels,counts = prepImgs(names,num)
 	trainImgs,trainLabels,testImgs,testLabels = getTest(imgs,labels,num,numTest,counts)
 	
-	#trainImgs,trainLabels = shuffleImgs(trainImgs,trainLabels)
-
-	return trainImgs,trainLabels,testImgs,testLabels
+	return np.expand_dims(trainImgs,axis=-1),trainLabels,np.expand_dims(testImgs,axis=-1),testLabels
 
 
 if __name__=="__main__":

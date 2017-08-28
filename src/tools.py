@@ -203,7 +203,7 @@ def display(img1,img2,titles=[]):
 
 
 # display a list of images
-def displayAll(imgs,title="",cmap="gray"):
+def displayAll(imgs,titles=[],cmap="gray"):
 	cols = int(np.ceil(np.sqrt(len(imgs))))
 	rows = int(np.ceil(len(imgs) / float(cols)))
 
