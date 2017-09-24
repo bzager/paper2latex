@@ -12,7 +12,7 @@ from keras import regularizers
 import extract
 from extract import initPhogs,initImgs,int2OneHot,oneHot2Int
 
-# 
+#
 def main():
 	numTrain = int(sys.argv[1])
 	numTest = int(sys.argv[2])
@@ -28,7 +28,7 @@ def main():
 	# get training and testing data
 	trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTest,numTrain)
 	#trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTest,numTrain)
-	
+
 	phog_dim = trainPhogs[0].shape
 	#img_dim = trainImgs[0].shape
 	hidden_size = 32
@@ -44,7 +44,7 @@ def main():
 	print("Loss: "+str(np.around(score[0],2)))
 	print("Accuracy: "+str(np.around(score[1],2)))
 	print("\n")
-	
+
 
 # a simple neural network
 def simple_model(input_shape,hidden_size,dropout_rate,num_classes):
@@ -65,12 +65,12 @@ def simple_model(input_shape,hidden_size,dropout_rate,num_classes):
 
 # convolutional network using 2d binary image input
 # machinelearningmastery.com/handwritten-digit-recognition-using-convolutional-neural-networks-python-keras/
-# small architecture: 
+# small architecture:
 # input->Conv(32,5x5,ReLU)->Pool->Dropout->Dense(128,ReLU)->Dense(numclass,softmax)
-# big architecture: 
+# big architecture:
 # input->Conv(32,5x5,ReLU)->Pool->Conv(16,3x3,ReLU)->Pool->Dropout->Dense(128,ReLU)->Dense(50,ReLU)->Dense(numclass,softmax)
 def conv_img(input_shape,dropout_rate,num_classes,size='small'):
-	
+
 	num_filters = 32
 	ker_size = 5
 
@@ -78,9 +78,9 @@ def conv_img(input_shape,dropout_rate,num_classes,size='small'):
 	model.add(Conv2D(num_filters,(ker_size,ker_size),input_shape=input_shape,padding='same',activation='relu'))
 	model.add(MaxPooling2D(pool_size=(2,2)))
 
-	if size == 'small': 
+	if size == 'small':
 		model = add_small(model)
-	elif size == 'big': 
+	elif size == 'big':
 		model = add_big(model)
 
 	model.add(Dense(num_classes,activation='softmax')) # output
@@ -88,7 +88,7 @@ def conv_img(input_shape,dropout_rate,num_classes,size='small'):
 
 	return model
 
-# 
+#
 def add_small(model):
 	model.add(Dropout(dropout_rate))
 	model.add(Flatten())
@@ -96,11 +96,11 @@ def add_small(model):
 
 	return model
 
-# 
+#
 def add_big(model):
 	model.add(Conv2D(16,(3,3),activation='relu'))
 	model.add(MaxPooling2D(pool_size=(2,2)))
-	model = setup_small(model)
+	model = add_small(model)
 	model.add(Dense(50,activation='relu'))
 
 	return model
