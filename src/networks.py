@@ -79,9 +79,9 @@ def conv_img(input_shape,dropout_rate,num_classes,size='small'):
 	model.add(MaxPooling2D(pool_size=(2,2)))
 
 	if size == 'small':
-		model = add_small(model)
+		model = add_small(model, dropout_rate)
 	elif size == 'big':
-		model = add_big(model)
+		model = add_big(model, dropout_rate)
 
 	model.add(Dense(num_classes,activation='softmax')) # output
 	model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
@@ -89,7 +89,7 @@ def conv_img(input_shape,dropout_rate,num_classes,size='small'):
 	return model
 
 #
-def add_small(model):
+def add_small(model, dropout_rate):
 	model.add(Dropout(dropout_rate))
 	model.add(Flatten())
 	model.add(Dense(128,activation='relu'))
@@ -97,10 +97,10 @@ def add_small(model):
 	return model
 
 #
-def add_big(model):
+def add_big(model, dropout_rate):
 	model.add(Conv2D(16,(3,3),activation='relu'))
 	model.add(MaxPooling2D(pool_size=(2,2)))
-	model = add_small(model)
+	model = add_small(model, dropout_rate)
 	model.add(Dense(50,activation='relu'))
 
 	return model
