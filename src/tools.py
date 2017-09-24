@@ -92,6 +92,8 @@ def padExtra(img,extra):
 # resizes and pads image to given size
 def resizeImg(img,size=45,extra=5):
 	square = squareImg(img)
+	if size == None:
+		return square
 	scale = size / np.sqrt(square.size)
 	rescaled = rescale(square,scale) # size x size
 	return padExtra(rescaled,extra) # (size+extra) x (size+extra)
@@ -170,8 +172,8 @@ def properties(labels):
 
 # histogram of oriented gradients
 # returns tuple (feature vector, visualization w/ same size as input)
-def calcHOG(img,orientations=8,cell=(5,5),block=(1,1),vector=True):
-	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=block,block_norm="L2-Hys",visualise=True,feature_vector=vector)
+def calcHOG(img,orientations=8,cell=(5,5),block=(1,1),vector=True,vis=True):
+	return feature.hog(img,orientations=orientations,pixels_per_cell=cell,cells_per_block=block,block_norm="L2-Hys",visualise=vis,feature_vector=vector)
 
 # local binary pattern
 # R = radius of neighbor pixels, P = number of pixels at that radius
@@ -201,7 +203,7 @@ def display(img1,img2,titles=[]):
 
 
 # display a list of images
-def displayAll(imgs,title="",cmap="gray"):
+def displayAll(imgs,titles=[],cmap="gray"):
 	cols = int(np.ceil(np.sqrt(len(imgs))))
 	rows = int(np.ceil(len(imgs) / float(cols)))
 
@@ -253,8 +255,8 @@ def plotImgHist(imgs,hist,center,width,text=" "):
 
 
 # calculates histogram of data and displays next to an image
-def fullImgHist(img,data,text=""):
-	h,cen,wid = hist(data)
+def fullImgHist(img,data,nbins=256,text=""):
+	h,cen,wid = hist(data,nbins=nbins)
 	plotImgHist(img,h,cen,wid,text=text)
 
 # calculates and plots histogram of [data]

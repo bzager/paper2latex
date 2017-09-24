@@ -6,6 +6,7 @@
 # python classifier.py [# training imgs for each class] [# test imgs for each class]
 
 import sys
+import cProfile
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,39 +14,45 @@ import sklearn
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 
-from tools import displayAll
-from extract import prepPhogs,prepImgs
+import extract
+from extract import initPhogs,initImgs
 
 
-# divides the loaded data into training and test sets
-# numTest is the number of test samples from each class
-def getTest(phogs,labels,num,numTest):
-	numClass = np.amax(labels) # number of unique classes
-	inds = [] # list of indices to make tests
+def main():
+	numTrain = int(sys.argv[1])
+	numTest = int(sys.argv[2])
+	num = numTrain + numTest
+	names = extract.lowercase #+ extract.uppercase # symbols to use
 
-	for i in range(numClass):
-		for j in range(numTest):
-			inds.append(i*num + j)
+	#trainPhogs,trainLabels,testPhogs,testLabels = initPhogs(names,numTrain,numTest)
+	trainImgs,trainLabels,testImgs,testLabels = initImgs(names,numTrain,numTest)
 
-	testPhogs = phogs[inds,:]
-	testLabels = labels[inds]
+	print(trainImgs.shape)
+	print(trainLabels.shape)
+	print(testImgs.shape)
+	print(testLabels.shape)
 
-	phogs = np.delete(phogs,inds,axis=0)
-	labels = np.delete(labels,inds,axis=0)
-	
-	return phogs,labels,testPhogs,testLabels
+	C = 0.5
+	gamma = "auto"
 
-# 
-def getAccuracy(labels,results):
+	#results = runSVM(trainPhogs,trainLabels,testPhogs,C=C,gamma=gamma)
+	#accuracy = getAccuracy(results,testLabels)
+	#print(np.around(accuracy,2))
+
+
+# calculate accuracy 
+# compares output labels with known labels
+def getAccuracy(results,labels):
 	correct = np.sum(np.equal(labels,results))
 	return float(correct) / labels.size
 
 # 
-def runSVM(phogs,labels,testPhogs):
-	C = 0.5
-	gamma = "auto"
-
-	clf = OneVsRestClassifier(SVC(C=C,gamma=gamma))
+def runSVM(phogs,labels,testPhogs,C=1.0,gamma="auto",style="ovr"):
+	if style == "ovr":
+		clf = OneVsRestClassifier(SVC(C=C,gamma=gamma))
+	else:
+		clf = SVC(C=C,gamma=gamma,decision_function_shape='ovo')
+		
 	clf.fit(phogs,labels)
 	results = clf.predict(testPhogs)
 
@@ -53,20 +60,8 @@ def runSVM(phogs,labels,testPhogs):
 
 
 if __name__=="__main__":
-	numTrain = int(sys.argv[1])
-	numTest = int(sys.argv[2])
-	num = numTrain + numTest
-	names = [str(i) for i in range(0,10)] # symbols to use
-	form = "int" # "oh" -> one-hot or "int" -> integer label format
-
-	phogs,labels = prepPhogs(names,num,form=form)
-	#imgs,labels = prepImgs(names,num,form=form)
-	phogs,labels,testPhogs,testLabels = getTest(phogs,labels,num,numTest)
-
-	results = runSVM(phogs,labels,testPhogs)
-
-	accuracy = getAccuracy(testLabels,results)
-	print(np.around(accuracy,2))
+	main()
+	#cProfile.run("main()")
 
 
 
