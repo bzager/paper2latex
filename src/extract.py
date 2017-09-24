@@ -9,7 +9,7 @@
 # Loads all images of those symbols and calculates the phog features
 # Saved as numpy binary files (.npy) in ../train/phog/[symbol name]
 
-# Use ALL as name to extract all 
+# Use ALL as name to extract all
 
 import sys
 import os
@@ -31,7 +31,7 @@ lowercase = list(letters)
 uppercase = list(letters.upper())
 integers = [str(i) for i in range(10)]
 
-# 
+#
 def main():
 	names = getArgs()
 
@@ -48,11 +48,11 @@ def getArgs():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("names",nargs="+")
 	args = parser.parse_args()
-	
+
 	return args.names
 
 """
-# calculates and saves Phog features of all training images 
+# calculates and saves Phog features of all training images
 def extractAll():
 	for name in os.listdir(root+imgDir):
 		phogs = extractDir(name)
@@ -73,7 +73,7 @@ def int2OneHot(vec):
 	labels[np.arange(vec.size),vec] = 1
 	return labels
 
-# converts 
+# converts
 def oneHot2Int(oneHot):
 	return np.where(oneHot)[0][0]
 
@@ -84,7 +84,7 @@ def shufflePhog(phogs,labels):
 
 	return toShuffle[:,:-1],toShuffle[:,-1].astype(np.int)
 
-# 
+#
 def shuffleImgs(imgs,labels):
 	inds = np.random.permutation(labels.size)
 	return imgs[inds,:,:],labels[inds]
@@ -115,18 +115,18 @@ def getInds(num,numClass,numTest,counts,labels):
 
 	return inds
 
-# calculates and saves Phog features for all training images 
+# calculates and saves Phog features for all training images
 # of a single class
 def extract(name,fname):
 	phogname = os.path.splitext(fname)[0] # remove .jpg
-	
+
 	if os.path.isfile(root+phogDir+name+"/"+phogname+".npy"):
 		return np.load(root+phogDir+name+"/"+phogname+".npy")
 
 	img = load(fname,root+imgDir+name)
 	sym = Symbol(props=None,img=np.invert(img))
 	sym.calcPhog(vis=False)
-	
+
 	print("    "+phogname+" saved")
 	sym.savePhog(name,phogname)
 
@@ -141,7 +141,7 @@ def extractDir(name,num=None,random=False):
 		return
 
 	fnames = os.listdir(path)
-	if num != None and num >= len(fnames): 
+	if num != None and num >= len(fnames):
 		num = None
 
 	#if random: files = permute(fnames,num)
@@ -149,7 +149,7 @@ def extractDir(name,num=None,random=False):
 
 	files = fnames[:num]
 	phogs = []
-	
+
 	print(name+" "+str(len(fnames)))
 	for fname in files:
 		if fname == ".DS_Store": continue
@@ -162,7 +162,7 @@ def extractDir(name,num=None,random=False):
 # creates stack of phog vectors for all training data
 # dimensions are (num*len(names),phog.size)
 # labels is vector of integer label for each row
-def prepPhogs(names,num,random=False):	
+def prepPhogs(names,num,random=False):
 	allPhogs = []
 	labels = []
 	counts = {}
@@ -214,17 +214,17 @@ def getTest(data,labels,num,numTest,counts):
 
 	trainData = np.delete(data,inds,axis=0)
 	trainLabels = np.delete(labels,inds,axis=0)
-	
+
 	return trainData,trainLabels,testData,testLabels
 
 
 # initializes phog data for classification
-# loads data, splits into train and test data, shuffles train data 
+# loads data, splits into train and test data, shuffles train data
 def initPhogs(names,numTrain,numTest,random=True):
 	num = numTrain+numTest
 	phogs,labels,counts = prepPhogs(names,num,random=random)
 	trainPhogs,trainLabels,testPhogs,testLabels = getTest(phogs,labels,num,numTest,counts)
-	
+
 	return trainPhogs,trainLabels,testPhogs,testLabels
 
 # initializes image data for classification
@@ -232,7 +232,7 @@ def initImgs(names,numTrain,numTest):
 	num = numTrain+numTest
 	imgs,labels,counts = prepImgs(names,num)
 	trainImgs,trainLabels,testImgs,testLabels = getTest(imgs,labels,num,numTest,counts)
-	
+
 	return np.expand_dims(trainImgs,axis=-1),trainLabels,np.expand_dims(testImgs,axis=-1),testLabels
 
 
